@@ -1,7 +1,6 @@
 package shadows.apotheosis.deadly.affix.impl.heavy;
 
 import shadows.apotheosis.deadly.affix.Affix;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 

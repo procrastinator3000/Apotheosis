@@ -1,20 +1,13 @@
 modLoader="javafml" #mandatory
-
-loaderVersion="[32,)" #mandatory
-
+loaderVersion="[40,)" #mandatory
 authors="${author}" #optional
-
 license="MIT License" #mandatory
 
 [[mods]] #mandatory
-
-modId="${modid}" #mandatory
-
-version="${version}" #mandatory
-
-displayName="${displayName}" #mandatory
-
-description='''${desc}'''
+    modId="${modid}" #mandatory
+    version="${version}" #mandatory
+    displayName="${displayName}" #mandatory
+    description='''${desc}'''
 
 [[dependencies.${modid}]] #optional
     modId="forge" #mandatory

@@ -1,6 +1,7 @@
 package shadows.apotheosis.deadly.affix.impl.heavy;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -15,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import shadows.apotheosis.Apotheosis;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -25,7 +26,7 @@ import javax.annotation.Nullable;
 /**
  * Cleave Affix.  Allows for full strength attacks to trigger a full-strength attack against nearby enemies.
  */
-public class CleaveAffix extends RangedAffix {
+public class CleaveAffix extends OneFloatAffix {
 
 	private static boolean cleaving = false;
 
@@ -94,4 +95,8 @@ public class CleaveAffix extends RangedAffix {
 		return upgradedTargets + upgradedChance;
 	}
 
+	@Override
+	public Optional<InstanceData> mergeValues(InstanceData instance1, InstanceData instance2) {
+		return Optional.empty();
+	}
 }

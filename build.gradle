@@ -46,10 +46,20 @@ minecraft {
 			workingDirectory project.file('run')
 			mods { "${modid}" { source sourceSets.main } }
 		}
+        client_with_tests = {
+            parent minecraft.runs.client
+
+            property 'forge.enableGameTest', 'true'
+            property 'forge.enabledGameTestNamespaces', ''
+            mods {
+                "${modid}" { source sourceSets.test }
+            }
+        }
     }
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.test.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { // JEI
@@ -70,6 +80,8 @@ repositories {
 }
 
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     minecraft "net.minecraftforge:forge:${mcVersion}-${forgeVersion}"
 	if(project.mixin.toBoolean()) annotationProcessor "org.spongepowered:mixin:${mixinVersion}:processor"
 	if(project.hasProperty('jeiVersion')) implementation fg.deobf("mezz.jei:jei-${jeiVersion}")
@@ -140,3 +152,8 @@ jar {
 }
 
 jar.finalizedBy('reobfJar')
+
+test {
+    useJUnitPlatform()
+    include("apotheosis/**")
+}

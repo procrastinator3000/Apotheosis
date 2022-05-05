@@ -1,6 +1,8 @@
 package shadows.apotheosis.deadly.affix.impl.ranged;
 
 import shadows.apotheosis.deadly.affix.Affix;
+import shadows.apotheosis.deadly.affix.AffixConfig;
+import shadows.apotheosis.deadly.affix.AffixConfig.NoneValueConfig;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
@@ -14,18 +16,13 @@ public class MagicArrowAffix extends Affix {
 		return false;
 	}
 
-	public MagicArrowAffix(LootRarity rarity, int weight) {
-		super(rarity, weight);
+	public MagicArrowAffix(NoneValueConfig config) {
+		super(config);
 	}
 
 	@Override
 	public boolean canApply(LootCategory lootCategory) {
 		return lootCategory.isRanged();
-	}
-
-	@Override
-	public float upgradeLevel(float curLvl, float newLvl) {
-		return 1;
 	}
 
 }

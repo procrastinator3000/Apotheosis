@@ -9,7 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import shadows.apotheosis.deadly.affix.Affix;
 import shadows.apotheosis.deadly.affix.AffixHelper;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.config.DeadlyConfig;
 
 public class LootController {
@@ -42,10 +43,8 @@ public class LootController {
 
 
         for (Affix affix : rolledAffixes) {
-            float level = affix instanceof RangedAffix rangedAffix ? rangedAffix.generateLevel(stack, rand, null) : rand.nextFloat();
+            float level = affix instanceof OneFloatAffix rangedAffix ? rangedAffix.generateLevel(stack, rand, AffixModifier.HALF) : rand.nextFloat();
             //pc3k: as per info left in LootRarity - common items have affix power cut in half
-            if(rarity == LootRarity.COMMON)
-                level /= 2;
             AffixHelper.applyAffix(stack, affix, level);
         }
 

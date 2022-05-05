@@ -1,6 +1,5 @@
 package shadows.apotheosis.deadly.affix.impl.melee;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -9,8 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import shadows.apotheosis.Apotheosis;
-import shadows.apotheosis.deadly.DeadlyModule;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -18,13 +16,12 @@ import shadows.apotheosis.deadly.loot.LootRarity;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
  * Full strength attacks will zap nearby enemies.
  */
-public class DamageChainAffix extends RangedAffix {
+public class DamageChainAffix extends OneFloatAffix {
 
 	public DamageChainAffix(LootRarity rarity, int min, int max, int weight) {
 		super(rarity, min, max, weight);

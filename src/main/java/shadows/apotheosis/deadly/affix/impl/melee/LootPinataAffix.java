@@ -7,18 +7,17 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.ItemStack;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
-import shadows.apotheosis.util.FloatValueRange;
 
 import javax.annotation.Nullable;
 
 /**
  * Slain monsters have a chance to explode into a loot pinata.
  */
-public class LootPinataAffix extends RangedAffix {
+public class LootPinataAffix extends OneFloatAffix {
 
 	public LootPinataAffix(LootRarity rarity, float min, float max, int weight) {
 		super(rarity, min, max, weight);

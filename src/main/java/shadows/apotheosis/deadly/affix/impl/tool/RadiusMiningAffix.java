@@ -15,8 +15,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.ForgeMod;
 import shadows.apotheosis.Apoth;
 import shadows.apotheosis.deadly.affix.AffixHelper;
-import shadows.apotheosis.deadly.affix.Affixes;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 import shadows.placebo.util.PlaceboUtil;
@@ -26,7 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class RadiusMiningAffix extends RangedAffix {
+public class RadiusMiningAffix extends OneFloatAffix {
 
 	private static final Set<UUID> breakers = new HashSet<>();
 

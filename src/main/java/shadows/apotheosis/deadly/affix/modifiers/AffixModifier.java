@@ -2,10 +2,13 @@ package shadows.apotheosis.deadly.affix.modifiers;
 
 import net.minecraft.util.Mth;
 import net.minecraft.util.random.Weight;
+import org.jetbrains.annotations.NotNull;
 import shadows.apotheosis.util.Weighted;
 
 public class AffixModifier extends Weighted {
+    public static final AffixModifier HALF = new AffixModifier("half", AffixOp.MULTIPLY, 0.5F, 1);
 
+//#region ------------------ FIELDS ----------------------
     /**
      * The language key for this modifier.
      */
@@ -22,17 +25,13 @@ public class AffixModifier extends Weighted {
     protected final float value;
 
     protected boolean editName = true;
+//#endregion
 
-    public AffixModifier(String key, AffixOp op, float value, int weight) {
+    AffixModifier(String key, AffixOp op, float value, int weight) {
         super(weight);
         this.key = key;
         this.op = op;
         this.value = value;
-    }
-
-    public AffixModifier dontEditName() {
-        editName = false;
-        return this;
     }
 
     /**
@@ -41,6 +40,11 @@ public class AffixModifier extends Weighted {
     public float editLevel(float level, float min, float max) {
         float newLevel = op == AffixOp.ADD ? level + value : op == AffixOp.MULTIPLY ? level * value : value;
         return Mth.clamp(newLevel, min, max);
+    }
+
+    public int editLevel(int level, int min, int max) {
+        float newLevel = op == AffixOp.ADD ? level + value : op == AffixOp.MULTIPLY ? level * value : value;
+        return Mth.clamp(Math.round(newLevel), min, max);
     }
 
     /**
@@ -58,7 +62,7 @@ public class AffixModifier extends Weighted {
     }
 
     @Override
-    public Weight getWeight() {
+    public @NotNull Weight getWeight() {
         return null;
     }
 

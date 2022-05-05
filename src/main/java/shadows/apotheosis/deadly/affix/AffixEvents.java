@@ -402,7 +402,7 @@ public class AffixEvents {
 		if (stack.hasTag()) {
 			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
 			List<Component> components = new ArrayList<>();
-			affixes.forEach((afx, lvl) -> afx.addInformation(stack, lvl, components::add));
+			affixes.forEach((afx, lvl) -> afx.addInformation(lvl, components::add));
 			e.getToolTip().addAll(1, components);
 		}
 	}

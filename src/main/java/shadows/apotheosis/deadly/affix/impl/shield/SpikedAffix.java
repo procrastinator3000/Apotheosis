@@ -5,11 +5,11 @@ import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
-public class SpikedAffix extends RangedAffix {
+public class SpikedAffix extends OneFloatAffix {
 
 	public SpikedAffix(LootRarity rarity, float min, float max, int weight) {
 		super(rarity, min, max, weight);

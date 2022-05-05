@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
@@ -30,32 +31,31 @@ public class AffixHelper {
 	 * Adds this specific affix to the Item's NBT tag.
 	 * Disallows illegal affixes.
 	 */
-	public static void applyAffix(ItemStack stack, Affix affix, float level) {
+	public static void applyAffix(ItemStack stack, Affix affix, CompoundTag tag) {
 		LootCategory cat = LootCategory.forItem(stack);
 		if (!(stack.getItem() instanceof IAffixSensitiveItem) && (cat == null || !affix.canApply(cat))) return;
 		var afxData = stack.getOrCreateTagElement(AFFIX_DATA);
 		if (!afxData.contains(AFFIXES)) afxData.put(AFFIXES, new CompoundTag());
 		var affixes = afxData.getCompound(AFFIXES);
-		affixes.putFloat(affix.getRegistryName().toString(), level);
+		affixes.put(affix.getRegistryName().toString(), tag);
 	}
 
-	public static void setAffixes(ItemStack stack, Map<Affix, Float> affixes) {
+	public static void setAffixes(ItemStack stack, Map<Affix, CompoundTag> affixes) {
 		var afxData = stack.getTagElement(AFFIX_DATA);
 		if (afxData != null) afxData.remove(AFFIXES);
-		affixes.forEach((a, l) -> applyAffix(stack, a, l));
+		affixes.forEach((a, t) -> applyAffix(stack, a, t));
 	}
 
-	public static Map<Affix, Float> getAffixes(ItemStack stack) {
-		Map<Affix, Float> map = new HashMap<>();
+	public static Map<Affix, CompoundTag> getAffixes(ItemStack stack) {
+		Map<Affix, CompoundTag> map = new HashMap<>();
 		CompoundTag afxData = stack.getTagElement(AFFIX_DATA);
 		if (afxData != null && afxData.contains(AFFIXES)) {
 			CompoundTag affixes = afxData.getCompound(AFFIXES);
-			for (String key : affixes.getAllKeys()) {
+			affixes.getAllKeys().forEach(key -> {
 				Affix affix = Affix.REGISTRY.getValue(new ResourceLocation(key));
-				if (affix == null) continue;
-				float lvl = affixes.getFloat(key);
-				map.put(affix, lvl);
-			}
+				if (affix != null)
+					map.put(affix, affixes.getCompound(key));
+			});
 		}
 		return map;
 	}

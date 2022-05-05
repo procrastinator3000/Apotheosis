@@ -1,5 +1,6 @@
 package shadows.apotheosis.deadly.affix;
 
+import net.minecraft.util.random.Weight;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.common.ForgeMod;
@@ -7,6 +8,7 @@ import net.minecraftforge.event.RegistryEvent.Register;
 import net.minecraftforge.registries.IForgeRegistry;
 import shadows.apotheosis.Apoth;
 import shadows.apotheosis.Apotheosis;
+import shadows.apotheosis.deadly.affix.AffixConfig.NoneValueConfig;
 import shadows.apotheosis.deadly.affix.impl.generic.EnchantabilityAffix;
 import shadows.apotheosis.deadly.affix.impl.heavy.CleaveAffix;
 import shadows.apotheosis.deadly.affix.impl.heavy.ExecuteAffix;
@@ -42,13 +44,6 @@ public class Affixes {
                 new AttributeAffix.Builder(LootRarity.COMMON).with(Apoth.Attributes.LIFE_STEAL, AttributeModifier.Operation.MULTIPLY_TOTAL, 0.05F, 0.75F).types(t-> t== LootCategory.SWORD || t==LootCategory.HEAVY_WEAPON).setPrefix(true).weighted(3).build("life_steal"),
 
                 //common?
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.MAX_HEALTH, AttributeModifier.Operation.ADDITION, (level -> 0.5F + Math.round(level * 3) / 2F)).types(LootCategory::isDefensive).build("common_max_hp"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.ARMOR, AttributeModifier.Operation.ADDITION, 0.5F, 2).types(LootCategory::isDefensive).build("common_armor"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADDITION, 0.5F, 2).build("common_dmg"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.MOVEMENT_SPEED, AttributeModifier.Operation.MULTIPLY_TOTAL, 0.05F, 0.15F).build("common_mvspd"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.ATTACK_SPEED, AttributeModifier.Operation.MULTIPLY_TOTAL, 0.1F, 0.25F).build("common_aspd"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(Attributes.ATTACK_KNOCKBACK, AttributeModifier.Operation.ADDITION, 0.25F, 0.5F).build("common_kb"),
-//                new AttributeAffix.Builder(LootRarity.COMMON).with(ForgeMod.REACH_DISTANCE, AttributeModifier.Operation.ADDITION, (level -> 0.5F + Math.round(level * 3) / 2F)).build("common_reach"),
                 new AttributeAffix.Builder(LootRarity.COMMON).with(ForgeMod.REACH_DISTANCE, AttributeModifier.Operation.ADDITION, (level -> 0.5F + Math.round(level * 3) / 2F)).types(t -> t == LootCategory.BREAKER || t == LootCategory.SWORD || t == LootCategory.HEAVY_WEAPON).build("reach_distance"),
 
                 //bow
@@ -57,7 +52,7 @@ public class Affixes {
                 new SnipeDamageAffix(LootRarity.COMMON, 2, 10, 3).setRegistryName("snipe_damage"),
                 new SpectralShotAffix(LootRarity.COMMON, 0.1F, 1F, 2).setRegistryName("spectral_shot"),
                 new SnareHitAffix(LootRarity.COMMON, 1, 10, 1).setRegistryName("snare_hit"),
-                new MagicArrowAffix(LootRarity.COMMON, 1).setRegistryName("magic_arrow"),
+                new MagicArrowAffix(new NoneValueConfig(LootRarity.COMMON, Weight.of(1))).setRegistryName("magic_arrow"),
                 new TeleportDropsAffix(LootRarity.COMMON, 1, 7, 2).setRegistryName("teleport_drops"),
 
                 //sword

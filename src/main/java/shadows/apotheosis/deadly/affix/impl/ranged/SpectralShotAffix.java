@@ -6,7 +6,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 /**
  * Ranged Spectral Shot Affix. Has a chance to fire an additional spectral arrow when shooting.
  */
-public class SpectralShotAffix extends RangedAffix {
+public class SpectralShotAffix extends OneFloatAffix {
 
 	public SpectralShotAffix(LootRarity rarity, float min, float max, int weight) {
 		super(rarity, min, max, weight);

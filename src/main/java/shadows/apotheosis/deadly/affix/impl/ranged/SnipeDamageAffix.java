@@ -5,7 +5,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -16,7 +16,7 @@ import java.util.Random;
 /**
  * Targets more than 30 blocks away take additional damage.
  */
-public class SnipeDamageAffix extends RangedAffix {
+public class SnipeDamageAffix extends OneFloatAffix {
 
 	public SnipeDamageAffix(LootRarity rarity, int min, int max, int weight) {
 		super(rarity, min, max, weight);

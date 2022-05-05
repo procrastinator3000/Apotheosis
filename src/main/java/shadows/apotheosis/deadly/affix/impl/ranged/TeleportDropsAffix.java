@@ -1,13 +1,13 @@
 package shadows.apotheosis.deadly.affix.impl.ranged;
 
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
 /**
  * Drops from killed enemies are teleported to the shooter.
  */
-public class TeleportDropsAffix extends RangedAffix {
+public class TeleportDropsAffix extends OneFloatAffix {
 
 	public TeleportDropsAffix(LootRarity rarity, int min, int max, int weight) {
 		super(rarity, min, max, weight);

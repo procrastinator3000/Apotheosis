@@ -20,6 +20,7 @@ import net.minecraftforge.event.AnvilUpdateEvent;
 import shadows.apotheosis.deadly.DeadlyModule;
 import shadows.apotheosis.deadly.affix.Affix;
 import shadows.apotheosis.deadly.affix.AffixHelper;
+import shadows.apotheosis.deadly.affix.OneValueAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.affix.IAffixSensitiveItem;
 import shadows.apotheosis.deadly.loot.LootRarity;

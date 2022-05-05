@@ -8,7 +8,9 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.AffixConfig;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.impl.OneIntAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -19,15 +21,10 @@ import java.util.Random;
 /**
  * Targets hit with an arrow are snared (by application of slowness 11)
  */
-public class SnareHitAffix extends RangedAffix {
+public class SnareHitAffix extends OneIntAffix {
 
-	public SnareHitAffix(LootRarity rarity, int min, int max, int weight) {
-		super(rarity, min, max, weight);
-	}
-
-	@Override
-	public float generateLevel(ItemStack stack, Random rand, @Nullable AffixModifier modifier) {
-		return Math.round(super.generateLevel(stack, rand, modifier));
+	public SnareHitAffix(AffixConfig.IntValueConfig config) {
+		super(config);
 	}
 
 	@Override
@@ -49,10 +46,4 @@ public class SnareHitAffix extends RangedAffix {
 			}
 		}
 	}
-
-	@Override
-	public float upgradeLevel(float curLvl, float newLvl) {
-		return (int) super.upgradeLevel(curLvl, newLvl);
-	}
-
 }

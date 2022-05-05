@@ -7,7 +7,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 /**
  * Targets below a certain percent HP threshold are instantly killed.
  */
-public class ExecuteAffix extends RangedAffix {
+public class ExecuteAffix extends OneFloatAffix {
 
 	private static final DamageSource EXECUTION = new DamageSource("apoth.execute").bypassInvul().bypassMagic();
 

@@ -2,7 +2,7 @@ package shadows.apotheosis.deadly.affix.impl.ranged;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * Decreases how long it takes to fully charge a bow.
  */
-public class DrawSpeedAffix extends RangedAffix {
+public class DrawSpeedAffix extends OneFloatAffix {
 
     private static final float[] values = { 0.1F, 0.2F, 0.25F, 0.33F, 0.5F, 1.0F, 1.1F, 1.2F, 1.25F, 1.33F, 1.5F };
 

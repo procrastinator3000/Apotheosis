@@ -1,7 +1,10 @@
 package shadows.apotheosis.deadly.loot;
 
+import java.util.Locale;
 import java.util.Random;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.TextColor;
 import shadows.apotheosis.deadly.config.DeadlyConfig;
 import shadows.placebo.PlaceboClient.RainbowColor;
@@ -26,6 +29,12 @@ public enum LootRarity {
 	final TextColor color;
 	final int affixes;
 
+//	public static Codec<LootRarity> CODEC_BY_INT = Codec.INT.xmap(LootRarity::of, LootRarity::asInt);
+//	public static Codec<LootRarity> CODEC_BY_NAME = Codec.STRING.xmap(LootRarity::valueOf, LootRarity::name);
+//	public static Codec<Either<LootRarity, LootRarity>> CODEC = Codec.either(CODEC_BY_INT, CODEC_BY_NAME);
+
+	public static final Codec<LootRarity> CODEC = Codec.STRING.xmap(LootRarity::byName, LootRarity::name);
+
 	private LootRarity(int color, int affixes) {
 		this(TextColor.fromRgb(color), affixes);
 	}
@@ -42,6 +51,18 @@ public enum LootRarity {
 	public int getAffixes() {
 		return this.affixes;
 	}
+
+	public static LootRarity byName(String value){
+		return valueOf(value.toUpperCase(Locale.ROOT));
+	}
+
+//	public static LootRarity of(int rarity){
+//		return LootRarity.values()[rarity];
+//	}
+
+//	public static int asInt(LootRarity rarity){
+//		return rarity.ordinal();
+//	}
 
 	/**
 	 * Default Chance Table: <br>

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
-import shadows.apotheosis.deadly.affix.impl.RangedAffix;
+import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -17,7 +17,7 @@ import java.util.Random;
 /**
  * Allows the user to place torches from the tool, for a durability cost.
  */
-public class TorchPlacementAffix extends RangedAffix {
+public class TorchPlacementAffix extends OneFloatAffix {
 
 	public TorchPlacementAffix(LootRarity rarity, int min, int max, int weight) {
 		super(rarity, min, max, weight);
