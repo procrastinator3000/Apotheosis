@@ -16,7 +16,7 @@ public class PlayerMixin {
 	@Inject(method = "createAttributes", at = @At("RETURN"))
 	private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
 		AttributeSupplier.Builder builder = cir.getReturnValue();
-		addIfExists(builder, Apoth.Attributes.COLD_DAMAGE, Apoth.Attributes.CRIT_CHANCE, Apoth.Attributes.CRIT_DAMAGE, Apoth.Attributes.CURRENT_HP_DAMAGE, Apoth.Attributes.DRAW_SPEED, Apoth.Attributes.FIRE_DAMAGE, Apoth.Attributes.LIFE_STEAL, Apoth.Attributes.OVERHEAL, Apoth.Attributes.PIERCING);
+		addIfExists(builder, Apoth.Attributes.COLD_DAMAGE, Apoth.Attributes.CRIT_CHANCE, Apoth.Attributes.CRIT_DAMAGE, Apoth.Attributes.CURRENT_HP_DAMAGE, Apoth.Attributes.DRAW_SPEED, Apoth.Attributes.FIRE_DAMAGE, Apoth.Attributes.LIFE_STEAL, Apoth.Attributes.OVERHEAL);
 	}
 
 	private static void addIfExists(AttributeSupplier.Builder builder, Attribute... attribs) {

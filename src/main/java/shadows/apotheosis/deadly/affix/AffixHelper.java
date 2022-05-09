@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStack.TooltipPart;
 import shadows.apotheosis.deadly.loot.LootCategory;
@@ -27,34 +28,74 @@ public class AffixHelper {
 	public static final String AFFIX_DATA = "AffixData";
 	public static final String AFFIXES = "Affixes";
 
+	private static void applyAffix(CompoundTag compound, Affix affix, Tag tag) {
+		compound.put(affix.getRegistryName().toString(), tag);
+	}
+
+	private static CompoundTag applyAffixes(CompoundTag compound, Map<Affix, Tag> affixes){
+		affixes.forEach((a, t) -> applyAffix(compound, a, t));
+		return compound;
+	}
+
 	/**
 	 * Adds this specific affix to the Item's NBT tag.
 	 * Disallows illegal affixes.
 	 */
-	public static void applyAffix(ItemStack stack, Affix affix, CompoundTag tag) {
+	public static void applyAffix(ItemStack stack, Affix affix, Tag tag) {
 		LootCategory cat = LootCategory.forItem(stack);
 		if (!(stack.getItem() instanceof IAffixSensitiveItem) && (cat == null || !affix.canApply(cat))) return;
-		var afxData = stack.getOrCreateTagElement(AFFIX_DATA);
-		if (!afxData.contains(AFFIXES)) afxData.put(AFFIXES, new CompoundTag());
-		var affixes = afxData.getCompound(AFFIXES);
-		affixes.put(affix.getRegistryName().toString(), tag);
+		CompoundTag afxData = stack.getOrCreateTagElement(AFFIX_DATA);
+		if (!afxData.contains(AFFIXES))
+			afxData.put(AFFIXES, new CompoundTag());
+		applyAffix(afxData.getCompound(AFFIXES), affix, tag);
 	}
 
-	public static void setAffixes(ItemStack stack, Map<Affix, CompoundTag> affixes) {
-		var afxData = stack.getTagElement(AFFIX_DATA);
-		if (afxData != null) afxData.remove(AFFIXES);
-		affixes.forEach((a, t) -> applyAffix(stack, a, t));
+	public static void applyAffix(AbstractArrow arrow, Affix affix, Tag tag) {
+		if(!arrow.getPersistentData().contains(AFFIX_DATA))
+			arrow.getPersistentData().put(AFFIX_DATA, new CompoundTag());
+		CompoundTag afxData = arrow.getPersistentData().getCompound(AFFIX_DATA);
+		if(!afxData.contains(AFFIXES))
+			afxData.put(AFFIXES, new CompoundTag());
+		applyAffix(afxData.getCompound(AFFIXES), affix, tag);
 	}
 
-	public static Map<Affix, CompoundTag> getAffixes(ItemStack stack) {
-		Map<Affix, CompoundTag> map = new HashMap<>();
+	public static void setAffixes(ItemStack stack, Map<Affix, Tag> affixes) {
+		CompoundTag afxData = stack.getOrCreateTagElement(AFFIX_DATA);
+		afxData.put(AFFIXES, applyAffixes(new CompoundTag(), affixes));
+	}
+
+	public static void setAffixes(AbstractArrow arrow, Map<Affix, Tag> affixes) {
+		if(!arrow.getPersistentData().contains(AFFIX_DATA))
+			arrow.getPersistentData().put(AFFIX_DATA, new CompoundTag());
+		CompoundTag afxData = arrow.getPersistentData().getCompound(AFFIX_DATA);
+		afxData.put(AFFIXES, applyAffixes(new CompoundTag(), affixes));
+	}
+
+	public static Map<Affix, Tag> getAffixes(ItemStack stack) {
+		Map<Affix, Tag> map = new HashMap<>();
 		CompoundTag afxData = stack.getTagElement(AFFIX_DATA);
 		if (afxData != null && afxData.contains(AFFIXES)) {
 			CompoundTag affixes = afxData.getCompound(AFFIXES);
 			affixes.getAllKeys().forEach(key -> {
 				Affix affix = Affix.REGISTRY.getValue(new ResourceLocation(key));
 				if (affix != null)
-					map.put(affix, affixes.getCompound(key));
+					map.put(affix, affixes.get(key));
+			});
+		}
+		return map;
+	}
+
+	public static Map<Affix, Tag> getAffixes(AbstractArrow arrow) {
+		Map<Affix, Tag> map = new HashMap<>();
+		if(!arrow.getPersistentData().contains(AFFIX_DATA))
+			return map;
+		CompoundTag afxData = arrow.getPersistentData().getCompound(AFFIX_DATA);
+		if (afxData.contains(AFFIXES)) {
+			CompoundTag affixes = afxData.getCompound(AFFIXES);
+			affixes.getAllKeys().forEach(key -> {
+				Affix affix = Affix.REGISTRY.getValue(new ResourceLocation(key));
+				if (affix != null)
+					map.put(affix, affixes.get(key));
 			});
 		}
 		return map;
@@ -63,6 +104,10 @@ public class AffixHelper {
 	public static boolean hasAffixes(ItemStack stack) {
 		var afxData = stack.getTagElement(AFFIX_DATA);
 		return afxData != null && !afxData.getCompound(AFFIXES).isEmpty();
+	}
+
+	public static boolean hasAffixes(AbstractArrow arrow) {
+		return !arrow.getPersistentData().getCompound(AFFIX_DATA).getCompound(AFFIXES).isEmpty();
 	}
 
 	public static void addLore(ItemStack stack, Component lore) {

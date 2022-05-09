@@ -1,16 +1,14 @@
 package shadows.apotheosis.deadly.affix;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.*;
 
 import javax.annotation.Nullable;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.sun.jdi.ClassType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -24,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +32,6 @@ import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.checkerframework.dataflow.qual.Pure;
-import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -41,29 +39,7 @@ import shadows.apotheosis.ench.asm.EnchHooks;
 import shadows.apotheosis.util.Weighted;
 import shadows.placebo.config.Configuration;
 
-/**
- * An affix is a construct very similar to an enchantment.
- * However, they are only available via loot, and have some additional rules.
- */
 public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affix> {
-	public CompoundTag getAsTag(){
-		CompoundTag tag = new CompoundTag();
-		tag.putBoolean(this.getRegistryName().toString(), true);
-		return tag;
-	}
-
-//	private static final Map<String, Codec<? extends AffixInstanceData>> CODECS = new HashMap<>();
-//
-//	protected static Codec<?> registerCodec(ResourceLocation key, Codec<? extends AffixInstanceData> codec){
-//		return CODECS.put(key.toString(), codec);
-//	}
-//
-//	protected static Optional<Codec<? extends AffixInstanceData>> getCodec(String key){
-//		if(CODECS.containsKey(key))
-//			return Optional.of(CODECS.get(key));
-//		else
-//			return Optional.empty();
-//	}
 
 	public static ForgeRegistry<Affix> REGISTRY;
 
@@ -88,13 +64,21 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 		this.rarity = config.getMinRarity();
 	}
 
+	public Tag generate(Random random, AffixModifier modifier){
+		return ByteTag.ONE;
+	}
+
+	public Tag merge(Tag instance1, Tag instance2){
+		return ByteTag.ONE;
+	}
+
 	/**
 	 * Apply modifiers from this affix to the itemstack's modifiers map.
 	 * @param tag NbtTag of affix instance data.
 	 * @param type The slot type for modifiers being gathered.
 	 * @param map The destination for generated attribute modifiers.
 	 */
-	public void addModifiers(CompoundTag tag, EquipmentSlot type, BiConsumer<Attribute, AttributeModifier> map) {
+	public void addModifiers(ItemStack stack, Tag tag, EquipmentSlot type, BiConsumer<Attribute, AttributeModifier> map) {
 	}
 
 	/**
@@ -103,8 +87,8 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * @param tag NbtTag of affix instance data.
 	 * @param list The destination for tooltips.
 	 */
-	public void addInformation(CompoundTag tag, Consumer<Component> list) {
-		list.accept(loreComponent("affix." + this.getRegistryName() + ".desc", fmt(level)));
+	public void addInformation(Tag tag, Consumer<Component> list) {
+		list.accept(loreComponent("affix." + this.getRegistryName() + ".desc", displayValue(tag)));
 	}
 
 	/**
@@ -127,7 +111,7 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * @return How many protection points this affix is worth against this source.<br>
 	 */
 	@Pure
-	public int getProtectionLevel(CompoundTag tag, DamageSource source) {
+	public int getProtectionLevel(Tag tag, DamageSource source) {
 		return 0;
 	}
 
@@ -135,7 +119,7 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * Calculates the additional damage this affix deals.
 	 * This damage is dealt as player physical damage, and is not impacted by critical strikes.
 	 */
-	public float getExtraDamageFor(CompoundTag tag, MobType creatureType) {
+	public float getExtraDamageFor(Tag tag, MobType creatureType) {
 		return 0.0F;
 	}
 
@@ -146,20 +130,20 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * @param target The target entity being attacked.
 	 * @param level The level of this affix, if applicable.
 	 */
-	public void onEntityDamaged(LivingEntity user, @Nullable Entity target, CompoundTag tag) {
+	public void onEntityDamaged(LivingEntity user, @Nullable Entity target, Tag tag) {
 	}
 
 	/**
 	 * Whenever an entity that has this enchantment on one of its associated items is damaged this method will be
 	 * called.
 	 */
-	public void onUserHurt(LivingEntity user, @Nullable Entity attacker, CompoundTag tag) {
+	public void onUserHurt(LivingEntity user, @Nullable Entity attacker, Tag tag) {
 	}
 
 	/**
 	 * Called when a user fires an arrow from a bow or crossbow with this affix on it.
 	 */
-	public void onArrowFired(LivingEntity user, AbstractArrow arrow, ItemStack bow, CompoundTag tag) {
+	public void onArrowFired(LivingEntity user, AbstractArrow arrow, ItemStack bow, Tag tag) {
 	}
 
 	/**
@@ -167,14 +151,14 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * Return null to not impact the original result type.
 	 */
 	@Nullable
-	public InteractionResult onItemUse(UseOnContext ctx, CompoundTag tag) {
+	public InteractionResult onItemUse(UseOnContext ctx, Tag tag) {
 		return null;
 	}
 
 	/**
 	 * Called when an arrow that was marked with this affix hits a target.
 	 */
-	public void onArrowImpact(AbstractArrow arrow, HitResult res, HitResult.Type type, CompoundTag tag) {
+	public void onArrowImpact(AbstractArrow arrow, HitResult res, HitResult.Type type, Tag tag) {
 	}
 
 	/**
@@ -186,7 +170,7 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 	 * @param level  The level of this affix.
 	 * @return	     The amount of damage that is *actually* blocked by the shield, after this affix applies.
 	 */
-	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, CompoundTag tag) {
+	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, Tag tag) {
 		return amount;
 	}
 
@@ -224,41 +208,30 @@ public abstract class Affix extends Weighted implements IForgeRegistryEntry<Affi
 		return new TranslatableComponent(text, args).withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE);
 	}
 
-	public static String fmt(float f) {
-		if (f == (long) f) return String.format("%d", (long) f);
-		else return String.format("%.2f", f);
+	public String displayValue(Tag tag) {
+		byte tagId = tag.getId();
+		return switch (tagId){
+			case Tag.TAG_BYTE,
+					Tag.TAG_SHORT,
+					Tag.TAG_INT,
+					Tag.TAG_LONG -> tag.getAsString();
+			case Tag.TAG_FLOAT -> fmt.format(((FloatTag)tag).getAsFloat());
+			case Tag.TAG_DOUBLE -> fmt.format(((DoubleTag)tag).getAsDouble());
+			default -> "???";
+		};
 	}
 
-	public Component getDisplayName(CompoundTag tag) {
-		return new TranslatableComponent("affix." + this.getRegistryName() + ".name", fmt(level)).withStyle(ChatFormatting.GRAY);
+	protected static final DecimalFormat fmt = new DecimalFormat("#######.##");
+
+
+	public Component getDisplayName(Tag tag) {
+		return new TranslatableComponent("affix." + this.getRegistryName() + ".name", displayValue(tag)).withStyle(ChatFormatting.GRAY);
 	}
 
 	public LootRarity getRarity() {
 		return this.rarity;
 	}
 
-
-	public static class AffixInstanceData {
-
-		public static final Codec<AffixInstanceData> CODEC = RecordCodecBuilder.create((instance) -> {
-			return instance.group(
-					ResourceLocation.CODEC.fieldOf("key").forGetter(AffixInstanceData::getKey)
-			).apply(instance, AffixInstanceData::new);
-		});
-		private final ResourceLocation key;
-
-		public AffixInstanceData(ResourceLocation key) {
-			this.key = key;
-		}
-
-		public ResourceLocation getKey() {
-			return this.key;
-		}
-
-		public ResourceLocation key() {
-			return key;
-		}
-	}
 }
 
 

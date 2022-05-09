@@ -1,8 +1,7 @@
-package shadows.apotheosis.deadly.affix.impl.ranged;
+package shadows.apotheosis.deadly.affix.impl;
 
 import shadows.apotheosis.deadly.affix.Affix;
-import shadows.apotheosis.deadly.affix.AffixConfig;
-import shadows.apotheosis.deadly.affix.AffixConfig.NoneValueConfig;
+import shadows.apotheosis.deadly.affix.NoValueAffixConfig;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
@@ -16,7 +15,7 @@ public class MagicArrowAffix extends Affix {
 		return false;
 	}
 
-	public MagicArrowAffix(NoneValueConfig config) {
+	public MagicArrowAffix(NoValueAffixConfig config) {
 		super(config);
 	}
 

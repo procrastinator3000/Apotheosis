@@ -8,6 +8,7 @@ import java.util.Random;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BookItem;
@@ -17,10 +18,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.AnvilUpdateEvent;
+import org.jetbrains.annotations.NotNull;
 import shadows.apotheosis.deadly.DeadlyModule;
 import shadows.apotheosis.deadly.affix.Affix;
 import shadows.apotheosis.deadly.affix.AffixHelper;
-import shadows.apotheosis.deadly.affix.OneValueAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.affix.IAffixSensitiveItem;
 import shadows.apotheosis.deadly.loot.LootRarity;
@@ -51,25 +52,25 @@ public class AffixTomeItem extends BookItem implements IAffixSensitiveItem {
 			tooltip.add(new TranslatableComponent("info.apotheosis.affix_tome2", new TranslatableComponent("rarity.apoth." + this.rarity.name().toLowerCase(Locale.ROOT)).withStyle(Style.EMPTY.withColor(this.rarity.getColor()))).withStyle(ChatFormatting.GRAY));
 		} else {
 			if (stack.getTag().contains(TYPE)) tooltip.add(new TranslatableComponent("info.apotheosis.retrieved_from", new TranslatableComponent("lootCategory.apotheosis." + LootCategory.values()[stack.getTag().getInt(TYPE)].toString().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.BLUE));
-			Map<Affix, Float> afx = AffixHelper.getAffixes(stack);
-			afx.forEach((a, l) -> {
-				tooltip.add(a.getDisplayName(l));
+			Map<Affix, Tag> afx = AffixHelper.getAffixes(stack);
+			afx.forEach((a, t) -> {
+				tooltip.add(a.getDisplayName(t));
 			});
 		}
 	}
 
 	@Override
-	public Component getDescription() {
+	public @NotNull Component getDescription() {
 		return ((MutableComponent) super.getDescription()).setStyle(Style.EMPTY.withColor(this.rarity.getColor()));
 	}
 
 	@Override
-	public Component getName(ItemStack stack) {
+	public @NotNull Component getName(@NotNull ItemStack stack) {
 		return new TranslatableComponent(this.getDescriptionId(stack)).setStyle(Style.EMPTY.withColor(this.rarity.getColor()));
 	}
 
 	@Override
-	public boolean isFoil(ItemStack stack) {
+	public boolean isFoil(@NotNull ItemStack stack) {
 		return AffixHelper.hasAffixes(stack);
 	}
 
@@ -91,7 +92,7 @@ public class AffixTomeItem extends BookItem implements IAffixSensitiveItem {
 			LootRarity rarity = AffixHelper.getRarity(lhsItem);
 			if (rarity == null) return false; // can lhsItem have affixes without rarity?
 			if (rarity.ordinal() > ((AffixTomeItem) rhsItem.getItem()).rarity.ordinal()) return false; //Can only scrap items of <= rarity.
-			Map<Affix, Float> lhsItemAffixes = AffixHelper.getAffixes(lhsItem);
+			Map<Affix, Tag> lhsItemAffixes = AffixHelper.getAffixes(lhsItem);
 			int size = Math.max(1, Mth.ceil(lhsItemAffixes.size() / 2D));
 			List<Affix> keys = new ArrayList<>(lhsItemAffixes.keySet());
 			long seed = 1831;
@@ -113,22 +114,22 @@ public class AffixTomeItem extends BookItem implements IAffixSensitiveItem {
 			resultTome.getOrCreateTag().putInt(TYPE, lhsItemLootCat.ordinal());
 			ev.setOutput(resultTome);
 		} else if (AffixHelper.hasAffixes(rhsItem)) { //Application Mode
-			Map<Affix, Float> bookAffixes = AffixHelper.getAffixes(rhsItem);
-			Map<Affix, Float> itemAffixes = AffixHelper.getAffixes(lhsItem);
+			Map<Affix, Tag> bookAffixes = AffixHelper.getAffixes(rhsItem);
+			Map<Affix, Tag> itemAffixes = AffixHelper.getAffixes(lhsItem);
 			Component name = lhsItem.getHoverName();
 			ItemStack out = lhsItem.copy();
 			int baseCost = itemAffixes.size() * 4;
 			int cost = 0;
-			for (Map.Entry<Affix, Float> affixEntry : bookAffixes.entrySet()) {
+			for (Map.Entry<Affix, Tag> affixEntry : bookAffixes.entrySet()) {
 				Affix afx = affixEntry.getKey();
 				if (!afx.canApply(lhsItemLootCat)) continue;
-				float curLvl = itemAffixes.getOrDefault(afx, 0F);
-				if (curLvl == 0) {
-					name = afx.chainName(name, true);
+				var curLvl = itemAffixes.get(afx);
+				if (curLvl == null) {
+					name = afx.chainName(name, afx.isPrefix());
 					itemAffixes.put(afx, affixEntry.getValue());
 					cost += 12;
 				} else {
-					itemAffixes.put(afx, afx.upgradeLevel(curLvl, affixEntry.getValue()));
+					itemAffixes.put(afx, afx.merge(curLvl, affixEntry.getValue()));
 					cost += 18;
 				}
 			}

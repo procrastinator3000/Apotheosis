@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.RegistryObject;
 import shadows.apotheosis.deadly.affix.Affix;
 import shadows.apotheosis.deadly.objects.BossSpawnerBlock;
 import shadows.apotheosis.deadly.objects.BossSpawnerBlockEntity;
@@ -206,15 +207,15 @@ public class Apoth {
 		/**
 		 * Bonus to how fast a ranged weapon is charged. Base Value = (1.0) = 100%
 		 */
-		public static final Attribute DRAW_SPEED = new RangedAttribute("apoth.draw_speed", 1, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "draw_speed");
+		public static final Attribute DRAW_SPEED = new RangedAttribute("apoth.draw_speed", 1.0D, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "draw_speed");
 		/**
-		 * Chance that a non-jump-attack will critically strike.  Base value = (1.0) = 0%
+		 * Chance that a non-jump-attack will critically strike.  Base value = (0.0) = 0%
 		 */
 		public static final Attribute CRIT_CHANCE = new RangedAttribute("apoth.crit_chance", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "crit_chance");
 		/**
 		 * Amount of damage caused by critical strikes. Base value = (1.0) = 100%
 		 */
-		public static final Attribute CRIT_DAMAGE = new RangedAttribute("apoth.crit_damage", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "crit_damage");
+		public static final Attribute CRIT_DAMAGE = new RangedAttribute("apoth.crit_damage", 1.0D, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "crit_damage");
 		/**
 		 * Bonus magic damage that slows enemies hit. Base value = (0.0) = 0 damage
 		 */
@@ -228,15 +229,11 @@ public class Apoth {
 		 */
 		public static final Attribute LIFE_STEAL = new RangedAttribute("apoth.life_steal", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "life_steal");
 		/**
-		 * Percent of physical damage that bypasses armor. Base value = (1.0) = 0%
-		 */
-		public static final Attribute PIERCING = new RangedAttribute("apoth.piercing", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "piercing");
-		/**
-		 * Bonus physical damage dealt equal to enemy's current health. Base value = (1.0) = 0%
+		 * Bonus physical damage dealt equal to enemy's current health. Base value = (0.0) = 0%
 		 */
 		public static final Attribute CURRENT_HP_DAMAGE = new RangedAttribute("apoth.current_hp_damage", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "current_hp_damage");
 		/**
-		 * Percent of physical damage converted to absorption hearts. Base value = (1.0) = 0%
+		 * Percent of physical damage converted to absorption hearts. Base value = (0.0) = 0%
 		 */
 		public static final Attribute OVERHEAL = new RangedAttribute("apoth.overhealing", 0, 0, 1024).setSyncable(true).setRegistryName(Apotheosis.MODID, "overheal");
 		/**

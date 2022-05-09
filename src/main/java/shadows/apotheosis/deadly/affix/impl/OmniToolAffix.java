@@ -1,6 +1,7 @@
-package shadows.apotheosis.deadly.affix.impl.tool;
+package shadows.apotheosis.deadly.affix.impl;
 
 import shadows.apotheosis.deadly.affix.Affix;
+import shadows.apotheosis.deadly.affix.AffixConfig;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
@@ -9,18 +10,13 @@ import shadows.apotheosis.deadly.loot.LootRarity;
  */
 public class OmniToolAffix extends Affix {
 
+	public OmniToolAffix(AffixConfig config) {
+		super(config);
+	}
+
 	@Override
 	public boolean isPrefix() {
 		return true;
-	}
-
-	public OmniToolAffix(LootRarity rarity, int weight) {
-		super(rarity, weight);
-	}
-
-	@Override
-	public float upgradeLevel(float curLvl, float newLvl) {
-		return 1;
 	}
 
 	@Override

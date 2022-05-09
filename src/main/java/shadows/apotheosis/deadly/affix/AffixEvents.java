@@ -1,18 +1,15 @@
 package shadows.apotheosis.deadly.affix;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -25,16 +22,10 @@ import net.minecraft.world.damagesource.IndirectEntityDamageSource;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
@@ -43,9 +34,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -65,63 +55,53 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import shadows.apotheosis.Apoth;
 import shadows.apotheosis.deadly.DeadlyModule;
 import shadows.apotheosis.deadly.ItemUseEvent;
-import shadows.apotheosis.deadly.affix.impl.tool.RadiusMiningAffix;
-import shadows.apotheosis.deadly.config.DeadlyConfig;
-import shadows.apotheosis.deadly.loot.LootController;
-import shadows.apotheosis.deadly.loot.LootRarity;
+import shadows.apotheosis.deadly.affix.impl.FloatAffix;
+import shadows.apotheosis.deadly.affix.impl.LootPinataAffix;
+import shadows.apotheosis.deadly.affix.impl.TeleportDropsAffix;
+import shadows.apotheosis.deadly.affix.impl.RadiusMiningAffix;
 import shadows.apotheosis.deadly.objects.AffixTomeItem;
-import shadows.apotheosis.deadly.reload.AffixLootManager;
-import shadows.apotheosis.deadly.reload.BossItemManager;
 
 public class AffixEvents {
 
 	@SubscribeEvent
 	public void onEntityJoin(EntityJoinWorldEvent e) {
-		if (e.getEntity() instanceof AbstractArrow ent && !e.getEntity().getPersistentData().getBoolean("apoth.generated")) {
-			Entity shooter = ent.getOwner();
+		if (e.getEntity() instanceof AbstractArrow arrow && !e.getEntity().getPersistentData().getBoolean("apoth.generated")) {
+			Entity shooter = arrow.getOwner();
 			if (shooter instanceof LivingEntity living) {
 				ItemStack bow = living.getMainHandItem();
-				Map<Affix, Float> affixes = AffixHelper.getAffixes(bow);
-				CompoundTag nbt = new CompoundTag();
-				affixes.keySet().forEach(a -> {
-					a.onArrowFired(living, ent, bow, affixes.get(a));
-					nbt.putFloat(a.getRegistryName().toString(), affixes.get(a));
-				});
-				ent.getPersistentData().put("apoth.affixes", nbt);
+				Map<Affix, Tag> bowAffixes = AffixHelper.getAffixes(bow);
+				bowAffixes.forEach((afx, tag) -> afx.onArrowFired(living, arrow, bow, tag));
+				AffixHelper.setAffixes(arrow, bowAffixes);
 			}
 		}
 	}
 
 	@SubscribeEvent
 	public void impact(ProjectileImpactEvent e) {
-		if(e.getProjectile() instanceof AbstractArrow arrow)
-		{
-			CompoundTag nbt = arrow.getPersistentData().getCompound("apoth.affixes");
-			for (String s : nbt.getAllKeys()) {
-				Affix a = Affix.REGISTRY.getValue(new ResourceLocation(s));
-				if (a != null) {
-					a.onArrowImpact(arrow, e.getRayTraceResult(), e.getRayTraceResult().getType(), nbt.getFloat(s));
-				}
-			}
-
+		if(e.getProjectile() instanceof AbstractArrow arrow) {
+			Map<Affix, Tag> arrowAffixes = AffixHelper.getAffixes(arrow);
+			HitResult hitResult = e.getRayTraceResult();
+			arrowAffixes.forEach((affix, tag) -> affix.onArrowImpact(arrow, hitResult, hitResult.getType(), tag));
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onDamage(LivingHurtEvent e) {
-		if (Apoth.Affixes.MAGIC_ARROW != null && e.getSource() instanceof IndirectEntityDamageSource src) {
+		if (e.getSource() instanceof IndirectEntityDamageSource src) {
 			if ("arrow".equals(src.msgId)) {
-				CompoundTag affixes = src.getDirectEntity().getPersistentData().getCompound("apoth.affixes");
-				if (affixes.contains(Apoth.Affixes.MAGIC_ARROW.getRegistryName().toString())) {
-					e.setCanceled(true);
-					DamageSource nSrc = new IndirectEntityDamageSource("apoth.magic_arrow", src.getDirectEntity(), src.getEntity()).bypassArmor().setMagic().setProjectile();
-					e.getEntityLiving().invulnerableTime = 0;
-					e.getEntityLiving().hurt(nSrc, e.getAmount());
+				if(src.getDirectEntity() instanceof AbstractArrow arrow) {
+					boolean isMagicArrow = AffixHelper.getAffixes(arrow).containsKey(Apoth.Affixes.MAGIC_ARROW);
+					if (isMagicArrow) {
+						e.setCanceled(true);
+						DamageSource nSrc = new IndirectEntityDamageSource("apoth.magic_arrow", src.getDirectEntity(), src.getEntity()).bypassArmor().setMagic().setProjectile();
+						e.getEntityLiving().invulnerableTime = 0;
+						e.getEntityLiving().hurt(nSrc, e.getAmount());
+					}
 				}
 			}
 		}
-		if (Apoth.Affixes.PIERCING != null && e.getSource().getEntity() instanceof LivingEntity src) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(src.getMainHandItem());
+		if (e.getSource().getEntity() instanceof LivingEntity attacker) {
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(attacker.getMainHandItem());
 			if (affixes.containsKey(Apoth.Affixes.PIERCING)) {
 				e.getSource().bypassArmor();
 			}
@@ -131,38 +111,44 @@ public class AffixEvents {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void afterDamage(LivingHurtEvent e) {
 		if (e.getSource() instanceof EntityDamageSource src && src.getEntity() instanceof Player player) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(player.getMainHandItem());
-			float lifeSteal = affixes.getOrDefault(Apoth.Affixes.LIFE_STEAL, 0F);
-			float dmg = Math.min(e.getAmount(), e.getEntityLiving().getHealth());
-			if (lifeSteal > 0 && !src.isMagic()) {
-				player.heal(dmg * lifeSteal);
-			}
-			float overheal = affixes.getOrDefault(Apoth.Affixes.OVERHEAL, 0F);
-			if (overheal > 0 && !src.isMagic() && player.getAbsorptionAmount() < 20) {
-				player.setAbsorptionAmount(Math.min(20, player.getAbsorptionAmount() + dmg * overheal));
+			if(!src.isMagic()) {
+				float dmgDealt = Math.min(e.getAmount(), e.getEntityLiving().getHealth());
+
+				float lifeSteal = (float)player.getAttributeValue(Apoth.Attributes.LIFE_STEAL);
+				player.heal(dmgDealt * lifeSteal);
+
+				if(player.getAbsorptionAmount() < 20) {
+					float value = (float)player.getAttributeValue(Apoth.Attributes.OVERHEAL);
+					player.setAbsorptionAmount(Math.min(20, player.getAbsorptionAmount() + dmgDealt * value));
+				}
 			}
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void drops(LivingDropsEvent e) {
-		if (Apoth.Affixes.TELEPORT_DROPS != null && e.getSource() instanceof IndirectEntityDamageSource src) {
-			if (src.getDirectEntity() instanceof AbstractArrow && src.getEntity() != null) {
-				CompoundTag affixes = src.getDirectEntity().getPersistentData().getCompound("apoth.affixes");
-				int canTeleport = (int) affixes.getFloat(Apoth.Affixes.TELEPORT_DROPS.getRegistryName().toString());
-				for (ItemEntity item : e.getDrops()) {
-					if (canTeleport > 0) {
-						Entity tSrc = src.getEntity();
-						item.setPos(tSrc.getX(), tSrc.getY(), tSrc.getZ());
-						canTeleport--;
-					}
-				}
+		if (e.getSource() instanceof IndirectEntityDamageSource src &&
+				src.getDirectEntity() instanceof AbstractArrow arrow &&
+				src.getEntity() != null) {
+
+			Map<Affix, Tag> arrowAffixes = AffixHelper.getAffixes(arrow);
+			if(arrowAffixes.containsKey(Apoth.Affixes.TELEPORT_DROPS)) {
+				Entity tSrc = src.getEntity();
+				int canTeleport = TeleportDropsAffix.getIntOrDefault(arrowAffixes.get(Apoth.Affixes.TELEPORT_DROPS), 0);
+				e.getDrops().stream().limit(canTeleport).forEach(item ->
+						item.setPos(tSrc.getX(), tSrc.getY(), tSrc.getZ())
+				);
 			}
 		}
-		if (e.getSource().getEntity() instanceof Player player && !e.getDrops().isEmpty() && e.getEntityLiving().canChangeDimensions() && !(e.getEntityLiving() instanceof Player)) {
-			LivingEntity dead = e.getEntityLiving();
-			float chance = AffixHelper.getAffixes(player.getMainHandItem()).getOrDefault(Apoth.Affixes.LOOT_PINATA, 0F);
-			if (player.level.random.nextFloat() < chance) {
+		LivingEntity dead = e.getEntityLiving();
+		if (e.getSource().getEntity() instanceof Player player &&
+				!e.getDrops().isEmpty() &&
+				dead.canChangeDimensions() &&
+				!(dead instanceof Player)) {
+			Tag tag = AffixHelper.getAffixes(player.getMainHandItem()).get(Apoth.Affixes.LOOT_PINATA);
+			if(tag == null)
+				return;
+			if (player.level.random.nextFloat() < LootPinataAffix.getFloatOrDefault(tag, 0F)) {
 				player.level.playSound(null, dead.getX(), dead.getY(), dead.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 4.0F, (1.0F + (player.level.random.nextFloat() - player.level.random.nextFloat()) * 0.2F) * 0.7F);
 				((ServerLevel) player.level).sendParticles(ParticleTypes.EXPLOSION_EMITTER, dead.getX(), dead.getY(), dead.getZ(), 2, 1.0D, 0.0D, 0.0D, 0);
 				List<ItemEntity> drops = new ArrayList<>(e.getDrops());
@@ -185,31 +171,30 @@ public class AffixEvents {
 	public void update(LivingEntityUseItemEvent.Tick e) {
 		if (e.getEntity() instanceof Player) {
 			ItemStack stack = e.getItem();
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			if (affixes.containsKey(Apoth.Affixes.DRAW_SPEED)) {
-				float t = affixes.get(Apoth.Affixes.DRAW_SPEED);
-				while (t > 0) {
-					if (e.getEntity().tickCount % (int) Math.floor(1 / Math.min(1, t)) == 0) e.setDuration(e.getDuration() - 1);
-					t--;
+				float f = FloatAffix.getFloatOrDefault(affixes.get(Apoth.Affixes.DRAW_SPEED), 0F);
+				while (f > 0) {
+					if (e.getEntity().tickCount % (int) Math.floor(1 / Math.min(1, f)) == 0) e.setDuration(e.getDuration() - 1);
+					f--;
 				}
 			}
 		}
 	}
 
 	@SubscribeEvent
-	public void crit(CriticalHitEvent e) {
-		Map<Affix, Float> affixes = AffixHelper.getAffixes(e.getPlayer().getMainHandItem());
+	public void checkForCriticalStrike(CriticalHitEvent e) {
+		float multiplier = (float)e.getPlayer().getAttributeValue(Apoth.Attributes.CRIT_DAMAGE);
 
-		if (!e.isVanillaCritical() && e.getPlayer().level.random.nextFloat() < affixes.getOrDefault(Apoth.Affixes.CRIT_CHANCE, 0F)) {
-			e.setResult(Result.ALLOW);
+		if(e.isVanillaCritical()){
+			e.setDamageModifier(e.getDamageModifier() * multiplier);
+			return;
 		}
 
-		if (!e.isVanillaCritical() && affixes.containsKey(Apoth.Affixes.MAX_CRIT)) {
+		var forceCrit = AffixHelper.getAffixes(e.getPlayer().getMainHandItem()).containsKey(Apoth.Affixes.MAX_CRIT);
+		if (forceCrit || e.getPlayer().level.random.nextFloat() < (e.getPlayer().getAttributeValue(Apoth.Attributes.CRIT_CHANCE))) {
+			e.setDamageModifier(e.getDamageModifier() * multiplier);
 			e.setResult(Result.ALLOW);
-		}
-
-		if (affixes.containsKey(Apoth.Affixes.CRIT_DAMAGE)) {
-			e.setDamageModifier((1 + affixes.get(Apoth.Affixes.CRIT_DAMAGE)) * Math.max(1.5F, e.getDamageModifier()));
 		}
 	}
 
@@ -217,8 +202,8 @@ public class AffixEvents {
 	public void onItemUse(ItemUseEvent e) {
 		ItemStack s = e.getItemStack();
 		if (!s.isEmpty()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(s);
-			for (Map.Entry<Affix, Float> ent : affixes.entrySet()) {
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(s);
+			for (Map.Entry<Affix, Tag> ent : affixes.entrySet()) {
 				InteractionResult interactionResult = ent.getKey().onItemUse(e.getContext(), ent.getValue());
 				if (interactionResult != null) {
 					e.setCanceled(true);
@@ -232,18 +217,22 @@ public class AffixEvents {
 	public void harvest(PlayerEvent.HarvestCheck e) {
 		ItemStack stack = e.getPlayer().getMainHandItem();
 		if (!stack.isEmpty()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			if (affixes.containsKey(Apoth.Affixes.OMNITOOL)) {
-				if (Items.DIAMOND_PICKAXE.isCorrectToolForDrops(e.getTargetBlock()) || Items.DIAMOND_SHOVEL.isCorrectToolForDrops(e.getTargetBlock()) || Items.DIAMOND_AXE.isCorrectToolForDrops(e.getTargetBlock())) e.setCanHarvest(true);
+				BlockState targetBlock = e.getTargetBlock();
+				if (Items.DIAMOND_PICKAXE.isCorrectToolForDrops(targetBlock) ||
+						Items.DIAMOND_SHOVEL.isCorrectToolForDrops(targetBlock) ||
+						Items.DIAMOND_AXE.isCorrectToolForDrops(targetBlock))
+					e.setCanHarvest(true);
 			}
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void speed(PlayerEvent.BreakSpeed e) {
+	public void modifyBreakSpeed(PlayerEvent.BreakSpeed e) {
 		ItemStack stack = e.getPlayer().getMainHandItem();
 		if (!stack.isEmpty()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			if (affixes.containsKey(Apoth.Affixes.OMNITOOL)) {
 				float shovel = getBaseSpeed(e.getPlayer(), Items.DIAMOND_SHOVEL, e.getState(), e.getPos());
 				float axe = getBaseSpeed(e.getPlayer(), Items.DIAMOND_AXE, e.getState(), e.getPos());
@@ -297,71 +286,6 @@ public class AffixEvents {
 		return f;
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public void addAffixGear(LivingSpawnEvent.SpecialSpawn e) {
-		if (e.getSpawnReason() == MobSpawnType.NATURAL || e.getSpawnReason() == MobSpawnType.CHUNK_GENERATION) {
-			LivingEntity entity = e.getEntityLiving();
-			Random rand = e.getWorld().getRandom();
-			if (!e.getWorld().isClientSide() && entity instanceof Monster) {
-				if (entity.getMainHandItem().isEmpty() && DeadlyConfig.randomAffixItem > 0 && rand.nextInt(DeadlyConfig.randomAffixItem) == 0) {
-					var entry= AffixLootManager.getRandomEntry(rand);
-					if(entry.isPresent())
-					{
-						LootRarity rarity = LootRarity.random(rand);
-						ItemStack loot = LootController.lootifyItem(entry.get().getStack().copy(), rarity, rand);
-						EquipmentSlot slot = entry.get().getStack().getEquipmentSlot();
-						if(slot == null)
-							slot = LivingEntity.getEquipmentSlotForItem(loot);
-						loot.getOrCreateTag().putBoolean("apoth_rspawn", true);
-						entity.setItemSlot(slot, loot);
-						((Mob) entity).setDropChance(slot, 2);
-					}
-					else
-						DeadlyModule.LOGGER.error("Failed to get random affix loot entry, cannot add affix gear to random spawn!");
-				}
-			}
-		}
-	}
-
-	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void surfaceBosses(LivingSpawnEvent.CheckSpawn e) {
-		if (e.getSpawnReason() == MobSpawnType.NATURAL || e.getSpawnReason() == MobSpawnType.CHUNK_GENERATION) {
-			LivingEntity entity = e.getEntityLiving();
-			Random rand = e.getWorld().getRandom();
-			if (!e.getWorld().isClientSide() && entity instanceof Monster && e.getResult() == Result.DEFAULT) {
-				if (DeadlyConfig.surfaceBossChance > 0 && rand.nextInt(DeadlyConfig.surfaceBossChance) == 0 && e.getWorld().canSeeSky(new BlockPos(e.getX(), e.getY(), e.getZ()))) {
-					Player player = e.getWorld().getNearestPlayer(e.getX(), e.getY(), e.getZ(), -1, false);
-					if (player == null) return; //Should never be null, but we check anyway since nothing makes sense around here.
-					var item = BossItemManager.INSTANCE.getRandomItem(rand);
-					if(!item.isPresent())
-					{
-						DeadlyModule.LOGGER.error("Failed to procure random boss entry! Cannot spawn");
-						return;
-					}
-					Mob boss = item.get().createBoss((ServerLevelAccessor) e.getWorld(), new BlockPos(e.getX() - 0.5, e.getY(), e.getZ() - 0.5), rand);
-					if (canSpawn(e.getWorld(), boss, player.distanceToSqr(boss))) {
-						e.getWorld().addFreshEntity(boss);
-						e.setResult(Result.DENY);
-						DeadlyModule.debugLog(boss.blockPosition(), "Surface Boss - " + boss.getName().getString());
-						if (DeadlyConfig.surfaceBossLightning) {
-							LightningBolt le = EntityType.LIGHTNING_BOLT.create(((ServerLevelAccessor) e.getWorld()).getLevel());
-							le.setPos(boss.getX(), boss.getY(), boss.getZ());
-							le.setVisualOnly(true);
-							e.getWorld().addFreshEntity(le);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private static boolean canSpawn(LevelAccessor world, Mob entity, double playerDist) {
-		if (playerDist > entity.getType().getCategory().getDespawnDistance() * entity.getType().getCategory().getDespawnDistance() && entity.removeWhenFarAway(playerDist)) {
-			return false;
-		} else {
-			return entity.checkSpawnRules(world, MobSpawnType.NATURAL) && entity.checkSpawnObstruction(world);
-		}
-	}
 //
 //	@SubscribeEvent(priority = EventPriority.LOW)
 //	public void trades(WandererTradesEvent e) {
@@ -389,7 +313,7 @@ public class AffixEvents {
 		ItemStack stack = e.getItemStack();
 		if(stack.getItem() instanceof IAffixSensitiveItem affixSensitiveItem && !affixSensitiveItem.receivesAttributes(stack)) return;
 		if (stack.hasTag()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			affixes.forEach((afx, lvl) -> afx.addModifiers(stack, lvl, e.getSlotType(), e::addModifier));
 		}
 	}
@@ -400,7 +324,7 @@ public class AffixEvents {
 		ItemStack stack = e.getItemStack();
 		if (stack.getItem() instanceof IAffixSensitiveItem && !((IAffixSensitiveItem) stack.getItem()).receivesTooltips(stack)) return;
 		if (stack.hasTag()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			List<Component> components = new ArrayList<>();
 			affixes.forEach((afx, lvl) -> afx.addInformation(lvl, components::add));
 			e.getToolTip().addAll(1, components);
@@ -411,9 +335,9 @@ public class AffixEvents {
 	public void shieldBlock(ShieldBlockEvent e) {
 		ItemStack stack = e.getEntityLiving().getUseItem();
 		if (stack.getItem() instanceof ShieldItem && stack.hasTag()) {
-			Map<Affix, Float> affixes = AffixHelper.getAffixes(stack);
+			Map<Affix, Tag> affixes = AffixHelper.getAffixes(stack);
 			float blocked = e.getBlockedDamage();
-			for (Map.Entry<Affix, Float> ent : affixes.entrySet()) {
+			for (Map.Entry<Affix, Tag> ent : affixes.entrySet()) {
 				blocked = ent.getKey().onShieldBlock(e.getEntityLiving(), stack, e.getDamageSource(), blocked, ent.getValue());
 			}
 			if (blocked != e.getOriginalBlockedDamage()) e.setBlockedDamage(blocked);
@@ -426,10 +350,10 @@ public class AffixEvents {
 		ItemStack tool = player.getMainHandItem();
 		Level world = player.level;
 		if (!world.isClientSide && tool.hasTag()) {
-			int level = AffixHelper.getAffixes(tool).getOrDefault(Apoth.Affixes.RADIUS_MINING, 0f).intValue();
-			if (level > 0) {
+			Tag tag = AffixHelper.getAffixes(tool).get(Apoth.Affixes.RADIUS_MINING);
+			if (tag != null) {
 				float hardness = e.getState().getDestroySpeed(e.getWorld(), e.getPos());
-				RadiusMiningAffix.breakExtraBlocks((ServerPlayer) player, e.getPos(), tool, level, hardness);
+				RadiusMiningAffix.breakExtraBlocks((ServerPlayer) player, e.getPos(), tool, tag, hardness);
 			}
 		}
 	}

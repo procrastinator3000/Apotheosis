@@ -1,24 +1,25 @@
-package shadows.apotheosis.deadly.affix.impl.ranged;
+package shadows.apotheosis.deadly.affix.impl;
 
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.FloatAffixConfig;
+import shadows.apotheosis.deadly.affix.impl.FloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
-import shadows.apotheosis.deadly.loot.LootRarity;
 
 import java.util.function.Consumer;
 
 /**
  * Ranged Spectral Shot Affix. Has a chance to fire an additional spectral arrow when shooting.
  */
-public class SpectralShotAffix extends OneFloatAffix {
+public class SpectralShotAffix extends FloatAffix {
 
-	public SpectralShotAffix(LootRarity rarity, float min, float max, int weight) {
-		super(rarity, min, max, weight);
+	public SpectralShotAffix(FloatAffixConfig config) {
+		super(config);
 	}
 
 	@Override
@@ -27,8 +28,8 @@ public class SpectralShotAffix extends OneFloatAffix {
 	}
 
 	@Override
-	public void onArrowFired(LivingEntity user, AbstractArrow arrow, ItemStack bow, float level) {
-		if (user.level.random.nextFloat() <= level) {
+	public void onArrowFired(LivingEntity user, AbstractArrow arrow, ItemStack bow, Tag tag) {
+		if (user.level.random.nextFloat() < getFloatOrDefault(tag, 0F)) {
 			if (!user.level.isClientSide) {
 				ArrowItem arrowitem = (ArrowItem) Items.SPECTRAL_ARROW;
 				AbstractArrow spectralArrow = arrowitem.createArrow(user.level, ItemStack.EMPTY, user);
@@ -51,13 +52,13 @@ public class SpectralShotAffix extends OneFloatAffix {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, float level, Consumer<Component> list) {
-		super.addInformation(stack, level * 100, list);
+	public void addInformation(Tag tag, Consumer<Component> list) {
+		super.addInformation(tag, list, true);
 	}
 
 	@Override
-	public Component getDisplayName(float level) {
-		return super.getDisplayName(level * 100);
+	public Component getDisplayName(Tag tag) {
+		return super.getDisplayName(tag, true);
 	}
 
 	private void cloneMotion(AbstractArrow src, AbstractArrow dest) {

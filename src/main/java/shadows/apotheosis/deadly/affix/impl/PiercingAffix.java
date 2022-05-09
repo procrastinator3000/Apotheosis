@@ -1,6 +1,7 @@
-package shadows.apotheosis.deadly.affix.impl.heavy;
+package shadows.apotheosis.deadly.affix.impl;
 
 import shadows.apotheosis.deadly.affix.Affix;
+import shadows.apotheosis.deadly.affix.NoValueAffixConfig;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
@@ -9,13 +10,13 @@ import shadows.apotheosis.deadly.loot.LootRarity;
  */
 public class PiercingAffix extends Affix {
 
+	public PiercingAffix(NoValueAffixConfig config) {
+		super(config);
+	}
+
 	@Override
 	public boolean isPrefix() {
 		return true;
-	}
-
-	public PiercingAffix(LootRarity rarity, int weight) {
-		super(rarity, weight);
 	}
 
 	@Override

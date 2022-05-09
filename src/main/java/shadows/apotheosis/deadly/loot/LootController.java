@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import shadows.apotheosis.deadly.affix.Affix;
 import shadows.apotheosis.deadly.affix.AffixHelper;
-import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.impl.FloatAffix;
 import shadows.apotheosis.deadly.affix.modifiers.AffixModifier;
 import shadows.apotheosis.deadly.config.DeadlyConfig;
 
@@ -29,7 +30,7 @@ public class LootController {
         List<Affix> affixes = AffixHelper.getAffixesFor(cat, rarity);
         Collections.shuffle(affixes, rand);
 
-        var rolledAffixes = affixes.stream().limit(rarity.getAffixes()).collect(Collectors.toList());
+        var rolledAffixes = affixes.stream().limit(rarity.getAffixes()).toList();
 
         var prefixNameGiver = rolledAffixes.stream().filter(affix -> affix.isPrefix()).findFirst();
         var suffixNameGiver = rolledAffixes.stream().filter(affix -> !affix.isPrefix()).findFirst();
@@ -43,7 +44,7 @@ public class LootController {
 
 
         for (Affix affix : rolledAffixes) {
-            float level = affix instanceof OneFloatAffix rangedAffix ? rangedAffix.generateLevel(stack, rand, AffixModifier.HALF) : rand.nextFloat();
+            Tag level = affix.generate(rand, AffixModifier.HALF);
             //pc3k: as per info left in LootRarity - common items have affix power cut in half
             AffixHelper.applyAffix(stack, affix, level);
         }

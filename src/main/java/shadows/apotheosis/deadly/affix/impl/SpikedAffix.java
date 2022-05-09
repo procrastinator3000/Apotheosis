@@ -1,18 +1,20 @@
-package shadows.apotheosis.deadly.affix.impl.shield;
+package shadows.apotheosis.deadly.affix.impl;
 
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.FloatAffixConfig;
+import shadows.apotheosis.deadly.affix.impl.FloatAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
-public class SpikedAffix extends OneFloatAffix {
+public class SpikedAffix extends FloatAffix {
 
-	public SpikedAffix(LootRarity rarity, float min, float max, int weight) {
-		super(rarity, min, max, weight);
+	public SpikedAffix(FloatAffixConfig config) {
+		super(config);
 	}
 
 	@Override
@@ -24,12 +26,12 @@ public class SpikedAffix extends OneFloatAffix {
 	}
 
 	@Override
-	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, float level) {
+	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, Tag tag) {
 		Entity tSource = source.getEntity();
 		if (tSource != null && tSource.distanceToSqr(entity) <= 9) {
-			tSource.hurt(causeSpikeDamage(entity), level * amount);
+			tSource.hurt(causeSpikeDamage(entity), getFloatOrDefault(tag, 0F) * amount);
 		}
-		return super.onShieldBlock(entity, stack, source, amount, level);
+		return super.onShieldBlock(entity, stack, source, amount, tag);
 	}
 
 	public static DamageSource causeSpikeDamage(Entity source) {

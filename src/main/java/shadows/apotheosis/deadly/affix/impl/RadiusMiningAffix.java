@@ -1,10 +1,9 @@
-package shadows.apotheosis.deadly.affix.impl.tool;
+package shadows.apotheosis.deadly.affix.impl;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +14,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.ForgeMod;
 import shadows.apotheosis.Apoth;
 import shadows.apotheosis.deadly.affix.AffixHelper;
-import shadows.apotheosis.deadly.affix.impl.OneFloatAffix;
+import shadows.apotheosis.deadly.affix.IntAffixConfig;
+import shadows.apotheosis.deadly.affix.impl.IntAffix;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 import shadows.placebo.util.PlaceboUtil;
@@ -23,34 +23,18 @@ import shadows.placebo.util.PlaceboUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
-public class RadiusMiningAffix extends OneFloatAffix {
+public class RadiusMiningAffix extends IntAffix {
 
 	private static final Set<UUID> breakers = new HashSet<>();
 
-	public RadiusMiningAffix(LootRarity rarity, int min, int max, int weight) {
-		super(rarity, min, max, weight);
+	public RadiusMiningAffix(IntAffixConfig config) {
+		super(config);
 	}
 
 	@Override
 	public boolean isPrefix() {
 		return true;
-	}
-
-	@Override
-	public void addInformation(ItemStack stack, float level, Consumer<Component> list) {
-		list.accept(loreComponent("affix." + this.getRegistryName() + ".desc" + (int) level));
-	}
-
-	@Override
-	public Component getDisplayName(float level) {
-		return new TranslatableComponent("affix." + this.getRegistryName() + ".name" + (int) level).withStyle(ChatFormatting.GRAY);
-	}
-
-	@Override
-	public float upgradeLevel(float curLvl, float newLvl) {
-		return (int) super.upgradeLevel(curLvl, newLvl);
 	}
 
 	@Override
@@ -63,9 +47,10 @@ public class RadiusMiningAffix extends OneFloatAffix {
 	 * @param tool The tool being used (which has this affix on it)
 	 * @param level The level of this affix, in this case, the mode of operation.
 	 */
-	public static void breakExtraBlocks(ServerPlayer player, BlockPos pos, ItemStack tool, int level, float hardness) {
+	public static void breakExtraBlocks(ServerPlayer player, BlockPos pos, ItemStack tool, Tag tag, float hardness) {
 		if (!breakers.add(player.getUUID())) return; //Prevent multiple break operations from cascading, and don't execute when sneaking.ew
 		if (!player.isShiftKeyDown()) try {
+			int level = ((IntTag)tag).getAsInt();
 			if (level == 1) {
 				breakBlockRadius(player, pos, 1, 2, 0, 1, hardness);
 			} else if (level == 2) {
@@ -122,8 +107,12 @@ public class RadiusMiningAffix extends OneFloatAffix {
 	}
 
 	static boolean isEffective(BlockState state, Player player) {
-		if (player.getMainHandItem().getItem().isCorrectToolForDrops(state)) return true;
-		if (AffixHelper.getAffixes(player.getMainHandItem()).containsKey(Apoth.Affixes.OMNITOOL)) return Items.DIAMOND_PICKAXE.isCorrectToolForDrops(state) || Items.DIAMOND_SHOVEL.isCorrectToolForDrops(state) || Items.DIAMOND_AXE.isCorrectToolForDrops(state);
+		if (player.getMainHandItem().getItem().isCorrectToolForDrops(state))
+			return true;
+		if (AffixHelper.getAffixes(player.getMainHandItem()).containsKey(Apoth.Affixes.OMNITOOL))
+			return Items.DIAMOND_PICKAXE.isCorrectToolForDrops(state) ||
+					Items.DIAMOND_SHOVEL.isCorrectToolForDrops(state) ||
+					Items.DIAMOND_AXE.isCorrectToolForDrops(state);
 		return false;
 	}
 

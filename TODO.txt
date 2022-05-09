@@ -1,3 +1,17 @@
+---------- pc3k ----------
+ - finish hardcoding default configs for affixes (check AttributeAffixes)
+ - re-add cleave affix (new AffixConfig type? IntFloatAffixConfig or sth? make numTargets and chance separate values to generate/upgrade)
+ - re-add DrawSpeedAffix affix (extend AttributeAffix, move calculations to right place)
+ - types predicate to be configured via config file instead hardcoded
+    (maybe make use of ItemTags somehow? care not to break compat with mods that add weapons
+     that do not extend SwordItem/AxeItem classes but still pretend to be such)
+ - prefix/suffix name variants for all affixes so we can get rid of hardcoded 'isPrefix' and have neat item names
+ - discrete float values for affixes
+    either make DrawSpeedAffix and similar use step-based values or implement config with valuesSet
+    over-the-top solution would be to have expression parser and create math functions from config, dont think its worth time though
+
+--------------------------
+
 Review anvil level math at higher levels, as well as repair costs.
 
 Add additional tomes to account for new enchantment types, and clarify usage in tooltips.

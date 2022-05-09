@@ -47,7 +47,7 @@
 //	@Override
 //	public void addInformation(ItemStack stack, float level, Consumer<ITextComponent> list) {
 //		if (level == 1) list.accept(loreComponent("affix." + this.getRegistryName() + ".desc1"));
-//		else list.accept(loreComponent("affix." + this.getRegistryName() + ".desc", fmt(level)));
+//		else list.accept(loreComponent("affix." + this.getRegistryName() + ".desc", displayValue(level)));
 //	}
 //
 //	@Override

@@ -1,23 +1,24 @@
-package shadows.apotheosis.deadly.affix.impl.shield;
+package shadows.apotheosis.deadly.affix.impl;
 
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import shadows.apotheosis.deadly.affix.Affix;
+import shadows.apotheosis.deadly.affix.AffixConfig;
 import shadows.apotheosis.deadly.loot.LootCategory;
 import shadows.apotheosis.deadly.loot.LootRarity;
 
 public class DisengageAffix extends Affix {
+	public DisengageAffix(AffixConfig config) {
+		super(config);
+	}
 
 	@Override
 	public boolean isPrefix() {
 		return true;
-	}
-
-	public DisengageAffix(LootRarity rarity, int weight) {
-		super(rarity, weight);
 	}
 
 	@Override
@@ -26,7 +27,7 @@ public class DisengageAffix extends Affix {
 	}
 
 	@Override
-	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, float level) {
+	public float onShieldBlock(LivingEntity entity, ItemStack stack, DamageSource source, float amount, Tag tag) {
 		Entity tSource = source.getEntity();
 		if (tSource != null && tSource.distanceToSqr(entity) <= 9) {
 			var look = entity.getLookAngle();

@@ -16,7 +16,6 @@ public class CustomAttributes {
                 COLD_DAMAGE,
                 FIRE_DAMAGE,
                 LIFE_STEAL,
-                PIERCING,
                 CURRENT_HP_DAMAGE,
                 OVERHEAL
         );
